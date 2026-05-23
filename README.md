@@ -1,27 +1,4 @@
 # Professional-calculator
-name: Build APK
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        with:
-          buildozer_version: stable
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload APK
-        uses: actions/upload-artifact@v3
-        with:
-          name: package
-          path: bin/*.apk
           from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
@@ -565,3 +542,37 @@ Tips:
 if __name__ == '__main__':
     CalculatorApp().run()
     
+
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x ./gradlew
+
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-debug-apk
+        path: app/build/outputs/apk/debug/app-debug.apk
